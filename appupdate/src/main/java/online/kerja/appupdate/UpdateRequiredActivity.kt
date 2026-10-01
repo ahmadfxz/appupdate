@@ -43,10 +43,8 @@ class UpdateRequiredActivity : Activity() {
 
     /** The update is no longer required: go back to the app's launcher screen. */
     internal fun release() {
-        packageManager.getLaunchIntentForPackage(packageName)?.let {
-            startActivity(it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
-        }
-        finish()
+        val launch = packageManager.getLaunchIntentForPackage(packageName)
+        if (launch != null) AppUpdate.switchTo(this, launch) else finish()
     }
 
     private fun openUpdateLink() {

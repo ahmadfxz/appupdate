@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppUpdate.Theme" parent="@android:style/Theme.Material.NoActionBar" />
+    <!-- No starting window and no window animation: the update screen replaces the app's
+         screen directly instead of flashing a blank background first. A host app can restyle
+         it by declaring a style with the same name. -->
+    <style name="AppUpdate.Theme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
 </resources>

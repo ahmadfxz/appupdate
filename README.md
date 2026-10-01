@@ -6,7 +6,7 @@ Mandiri: tanpa dependensi pihak ketiga, tanpa version catalog, tidak tahu apa-ap
 
 ## Pasang di aplikasi
 
-Lewat [JitPack](https://jitpack.io) — ganti `1.0.3` dengan tag rilis terbaru.
+Lewat [JitPack](https://jitpack.io) — ganti `1.0.4` dengan tag rilis terbaru.
 
 1. `settings.gradle.kts`:
    ```kotlin
@@ -20,7 +20,7 @@ Lewat [JitPack](https://jitpack.io) — ganti `1.0.3` dengan tag rilis terbaru.
    ```
 2. `app/build.gradle.kts`:
    ```kotlin
-   implementation("com.github.ahmadfxz:appupdate:1.0.3")
+   implementation("com.github.ahmadfxz:appupdate:1.0.4")
    ```
 3. `Application.onCreate()`:
    ```kotlin
@@ -34,7 +34,7 @@ Butuh Kotlin 2.0+ dan minSdk 21+. Tidak menarik dependensi selain kotlin-stdlib.
 ## Rilis versi baru
 
 ```sh
-git tag 1.0.4 && git push origin 1.0.4
+git tag 1.0.5 && git push origin 1.0.5
 ```
 
 JitPack mem-build tag itu saat pertama kali diminta (status build: `https://jitpack.io/#ahmadfxz/appupdate`). Tes lokal: `./gradlew :appupdate:publishReleasePublicationToMavenLocal`.
@@ -46,3 +46,11 @@ JitPack mem-build tag itu saat pertama kali diminta (status build: `https://jitp
 - Status disimpan, jadi mematikan internet tidak membuka blokir. Blokir lepas bila server menjawab `false`/404, atau versionCode terpasang berubah (user sudah update).
 - Server mati / error jaringan **tidak** memblokir aplikasi.
 - Teks bisa diganti dari aplikasi host dengan mendefinisikan ulang string `appupdate_title`, `appupdate_message`, `appupdate_button`.
+- Tampilan layar update bisa disesuaikan dengan aplikasi host dengan mendefinisikan ulang style `AppUpdate.Theme` (pertahankan `android:windowDisablePreview=true` agar tidak ada kedip layar kosong), mis.:
+  ```xml
+  <style name="AppUpdate.Theme" parent="@android:style/Theme.Material.NoActionBar">
+      <item name="android:windowDisablePreview">true</item>
+      <item name="android:windowAnimationStyle">@null</item>
+      <item name="android:windowBackground">@color/background</item>
+  </style>
+  ```

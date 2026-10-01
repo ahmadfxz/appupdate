@@ -164,13 +164,26 @@ object AppUpdate {
         }
     }
 
-    /** Replaces the whole task with the update screen, so nothing of the app stays reachable. */
+    /** Replaces every screen of the app with the update screen, so nothing stays reachable. */
     private fun block(activity: Activity) {
-        activity.startActivity(
-            Intent(activity, UpdateRequiredActivity::class.java)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK),
-        )
-        activity.finish()
+        switchTo(activity, Intent(activity, UpdateRequiredActivity::class.java))
+    }
+
+    /**
+     * Opens [intent] in the current task and finishes [from] with every screen below it, all
+     * without a transition. Clearing the task instead (FLAG_ACTIVITY_CLEAR_TASK) makes Android
+     * swap tasks, which shows a blank window between the two screens.
+     */
+    internal fun switchTo(from: Activity, intent: Intent) {
+        if (Build.VERSION.SDK_INT >= 34) {
+            from.overrideActivityTransition(Activity.OVERRIDE_TRANSITION_CLOSE, 0, 0)
+        }
+        from.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION))
+        from.finishAffinity()
+        if (Build.VERSION.SDK_INT < 34) {
+            @Suppress("DEPRECATION")
+            from.overridePendingTransition(0, 0)
+        }
     }
 
     @Suppress("DEPRECATION")
