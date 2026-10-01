@@ -6,7 +6,7 @@ Mandiri: tanpa dependensi pihak ketiga, tanpa version catalog, tidak tahu apa-ap
 
 ## Pasang di aplikasi
 
-Lewat [JitPack](https://jitpack.io) — ganti `ahmadfxz` dengan akun GitHub pemilik repo ini dan `1.0.3` dengan tag rilis.
+Lewat [JitPack](https://jitpack.io) — ganti `1.0.3` dengan tag rilis terbaru.
 
 1. `settings.gradle.kts`:
    ```kotlin
