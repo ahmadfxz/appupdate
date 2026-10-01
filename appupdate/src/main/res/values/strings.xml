@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The host app can override any of these by declaring the same name. -->
+    <string name="appupdate_title">Update Diperlukan</string>
+    <string name="appupdate_message">Versi aplikasi ini sudah tidak didukung. Silakan perbarui ke versi terbaru untuk melanjutkan.</string>
+    <string name="appupdate_button">Update Sekarang</string>
+</resources>
