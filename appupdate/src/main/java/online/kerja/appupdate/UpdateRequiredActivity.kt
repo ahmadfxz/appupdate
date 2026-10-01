@@ -11,22 +11,15 @@ import android.util.TypedValue
 import android.view.Gravity
 import android.widget.Button
 import android.widget.ImageView
-import android.view.View
 import android.widget.LinearLayout
-import android.widget.ProgressBar
 import android.widget.TextView
 import android.window.OnBackInvokedDispatcher
 
 /**
  * The only screen left while an update is required: a message and a button that opens the
- * update link. Back sends the app to the background instead of returning into it. While the
- * block only comes from the cache ([AppUpdate.settled] is false) it shows the app icon and a
- * spinner instead, so a block lifted on the server reads as a splash, not as an update prompt.
+ * update link. Back sends the app to the background instead of returning into it.
  */
 class UpdateRequiredActivity : Activity() {
-
-    private lateinit var progress: ProgressBar
-    private lateinit var prompt: List<View>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,19 +33,7 @@ class UpdateRequiredActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
-        if (!AppUpdate.required) {
-            release()
-            return
-        }
-        render()
-        AppUpdate.check()
-    }
-
-    /** Shows the update prompt once the block is confirmed, a spinner until then. */
-    internal fun render() {
-        val ready = AppUpdate.settled
-        progress.visibility = if (ready) View.GONE else View.VISIBLE
-        prompt.forEach { it.visibility = if (ready) View.VISIBLE else View.GONE }
+        if (!AppUpdate.required) release() else AppUpdate.check()
     }
 
     @Deprecated("Below API 33 only; newer versions use the OnBackInvokedCallback.")
@@ -82,24 +63,6 @@ class UpdateRequiredActivity : Activity() {
 
     private fun buildContent(): LinearLayout {
         val pad = dp(32)
-        val title = TextView(this).apply {
-            setText(R.string.appupdate_title)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
-            setTypeface(typeface, Typeface.BOLD)
-            gravity = Gravity.CENTER
-        }
-        val message = TextView(this).apply {
-            setText(R.string.appupdate_message)
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
-            gravity = Gravity.CENTER
-        }
-        val button = Button(this).apply {
-            setText(R.string.appupdate_button)
-            setOnClickListener { openUpdateLink() }
-        }
-        progress = ProgressBar(this)
-        prompt = listOf(title, message, button)
-
         return LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
@@ -108,10 +71,24 @@ class UpdateRequiredActivity : Activity() {
             addView(ImageView(context).apply {
                 setImageDrawable(applicationInfo.loadIcon(packageManager))
             }, LinearLayout.LayoutParams(dp(88), dp(88)).apply { bottomMargin = dp(24) })
-            addView(progress, wrap())
-            addView(title, wrap().apply { bottomMargin = dp(12) })
-            addView(message, wrap().apply { bottomMargin = dp(32) })
-            addView(button, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(52)))
+
+            addView(TextView(context).apply {
+                setText(R.string.appupdate_title)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
+                setTypeface(typeface, Typeface.BOLD)
+                gravity = Gravity.CENTER
+            }, wrap().apply { bottomMargin = dp(12) })
+
+            addView(TextView(context).apply {
+                setText(R.string.appupdate_message)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
+                gravity = Gravity.CENTER
+            }, wrap().apply { bottomMargin = dp(32) })
+
+            addView(Button(context).apply {
+                setText(R.string.appupdate_button)
+                setOnClickListener { openUpdateLink() }
+            }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(52)))
         }
     }
 

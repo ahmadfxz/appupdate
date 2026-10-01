@@ -24,14 +24,14 @@ import java.util.concurrent.Executors
  * AppUpdate.install(this)
  * ```
  *
- * Every time the app comes to the foreground it asks `GET {baseUrl}/api/v1/update/{package}
- * ?version_code={versionCode}`. When the answer is `need_update=true`, every screen of the app is
- * replaced by [UpdateRequiredActivity], which only offers the update link. The answer is cached,
- * so the block survives a restart without network; it is lifted when the server says otherwise
- * or the installed versionCode changes. Network or server errors never block the app.
+ * The app always opens normally. Every time it comes to the foreground it asks
+ * `GET {baseUrl}/api/v1/update/{package}?version_code={versionCode}` in the background; when the
+ * answer is `need_update=true`, every screen of the app is replaced by [UpdateRequiredActivity],
+ * which only offers the update link.
  *
- * Until the server has answered in the current foreground session, a cached block shows only a
- * neutral loading screen, so lifting it on the server does not flash the update message.
+ * The last answer is cached and used only when the server cannot be reached, so turning the
+ * network off does not escape a block; it is forgotten when the installed versionCode changes.
+ * Without a cached block, network or server errors never block the app.
  *
  * All state is main-thread only.
  */
@@ -57,19 +57,17 @@ object AppUpdate {
     private var startedActivities = 0
     private var resumed: Activity? = null
 
+    /** The block in force in this process; only ever set from a finished check. */
     internal var required = false
-        private set
-
-    /**
-     * [required] reflects this foreground session: the server answered, or could not be reached
-     * and the cached answer stands. Until then a cached block shows no update message.
-     */
-    internal var settled = false
         private set
     internal var updateUrl = ""
         private set
     internal var packageName = ""
         private set
+
+    /** The last answer from the server, applied only when a check fails. */
+    private var cachedRequired = false
+    private var cachedUrl = ""
 
     /**
      * @param baseUrl the update API, without a trailing path.
@@ -94,8 +92,8 @@ object AppUpdate {
 
         prefs = application.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         if (prefs.getLong(KEY_VERSION, -1) == versionCode) {
-            required = prefs.getBoolean(KEY_REQUIRED, false)
-            updateUrl = prefs.getString(KEY_URL, "").orEmpty()
+            cachedRequired = prefs.getBoolean(KEY_REQUIRED, false)
+            cachedUrl = prefs.getString(KEY_URL, "").orEmpty()
         } else {
             // A different build is installed (most likely the update itself): forget the old answer.
             prefs.edit().clear().putLong(KEY_VERSION, versionCode).apply()
@@ -112,11 +110,14 @@ object AppUpdate {
             val result = fetch()
             main.post {
                 checking = false
-                settled = true
                 if (result != null) {
+                    cachedRequired = result.first
+                    cachedUrl = result.second
+                    prefs.edit().putBoolean(KEY_REQUIRED, result.first).putString(KEY_URL, result.second).apply()
                     apply(result.first, result.second)
-                } else {
-                    (resumed as? UpdateRequiredActivity)?.render()
+                } else if (!required && cachedRequired) {
+                    // Server unreachable: the last known block still stands.
+                    apply(true, cachedUrl)
                 }
             }
         }
@@ -154,13 +155,12 @@ object AppUpdate {
     private fun apply(needUpdate: Boolean, url: String) {
         required = needUpdate
         updateUrl = url
-        prefs.edit().putBoolean(KEY_REQUIRED, needUpdate).putString(KEY_URL, url).apply()
 
         val activity = resumed ?: return
-        when {
-            needUpdate && activity !is UpdateRequiredActivity -> block(activity)
-            needUpdate && activity is UpdateRequiredActivity -> activity.render()
-            !needUpdate && activity is UpdateRequiredActivity -> activity.release()
+        if (needUpdate && activity !is UpdateRequiredActivity) {
+            block(activity)
+        } else if (!needUpdate && activity is UpdateRequiredActivity) {
+            activity.release()
         }
     }
 
@@ -199,8 +199,6 @@ object AppUpdate {
 
         override fun onActivityStopped(activity: Activity) {
             startedActivities = (startedActivities - 1).coerceAtLeast(0)
-            // Back in the background: the next foreground session waits for a fresh answer.
-            if (startedActivities == 0) settled = false
         }
 
         override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
