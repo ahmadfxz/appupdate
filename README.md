@@ -6,7 +6,7 @@ Mandiri: tanpa dependensi pihak ketiga, tanpa version catalog, tidak tahu apa-ap
 
 ## Pasang di aplikasi
 
-Lewat [JitPack](https://jitpack.io) — ganti `ahmadfxz` dengan akun GitHub pemilik repo ini dan `1.0.0` dengan tag rilis.
+Lewat [JitPack](https://jitpack.io) — ganti `ahmadfxz` dengan akun GitHub pemilik repo ini dan `1.0.3` dengan tag rilis.
 
 1. `settings.gradle.kts`:
    ```kotlin
@@ -20,7 +20,7 @@ Lewat [JitPack](https://jitpack.io) — ganti `ahmadfxz` dengan akun GitHub pemi
    ```
 2. `app/build.gradle.kts`:
    ```kotlin
-   implementation("com.github.ahmadfxz:appupdate:1.0.0")
+   implementation("com.github.ahmadfxz:appupdate:1.0.3")
    ```
 3. `Application.onCreate()`:
    ```kotlin
@@ -34,7 +34,7 @@ Butuh Kotlin 2.0+ dan minSdk 21+. Tidak menarik dependensi selain kotlin-stdlib.
 ## Rilis versi baru
 
 ```sh
-git tag 1.0.1 && git push origin 1.0.1
+git tag 1.0.4 && git push origin 1.0.4
 ```
 
 JitPack mem-build tag itu saat pertama kali diminta (status build: `https://jitpack.io/#ahmadfxz/appupdate`). Tes lokal: `./gradlew :appupdate:publishReleasePublicationToMavenLocal`.
