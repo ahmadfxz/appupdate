@@ -30,6 +30,9 @@ import java.util.concurrent.Executors
  * so the block survives a restart without network; it is lifted when the server says otherwise
  * or the installed versionCode changes. Network or server errors never block the app.
  *
+ * Until the server has answered in the current foreground session, a cached block shows only a
+ * neutral loading screen, so lifting it on the server does not flash the update message.
+ *
  * All state is main-thread only.
  */
 object AppUpdate {
@@ -55,6 +58,13 @@ object AppUpdate {
     private var resumed: Activity? = null
 
     internal var required = false
+        private set
+
+    /**
+     * [required] reflects this foreground session: the server answered, or could not be reached
+     * and the cached answer stands. Until then a cached block shows no update message.
+     */
+    internal var settled = false
         private set
     internal var updateUrl = ""
         private set
@@ -102,7 +112,12 @@ object AppUpdate {
             val result = fetch()
             main.post {
                 checking = false
-                if (result != null) apply(result.first, result.second)
+                settled = true
+                if (result != null) {
+                    apply(result.first, result.second)
+                } else {
+                    (resumed as? UpdateRequiredActivity)?.render()
+                }
             }
         }
     }
@@ -142,10 +157,10 @@ object AppUpdate {
         prefs.edit().putBoolean(KEY_REQUIRED, needUpdate).putString(KEY_URL, url).apply()
 
         val activity = resumed ?: return
-        if (needUpdate && activity !is UpdateRequiredActivity) {
-            block(activity)
-        } else if (!needUpdate && activity is UpdateRequiredActivity) {
-            activity.release()
+        when {
+            needUpdate && activity !is UpdateRequiredActivity -> block(activity)
+            needUpdate && activity is UpdateRequiredActivity -> activity.render()
+            !needUpdate && activity is UpdateRequiredActivity -> activity.release()
         }
     }
 
@@ -184,6 +199,8 @@ object AppUpdate {
 
         override fun onActivityStopped(activity: Activity) {
             startedActivities = (startedActivities - 1).coerceAtLeast(0)
+            // Back in the background: the next foreground session waits for a fresh answer.
+            if (startedActivities == 0) settled = false
         }
 
         override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
