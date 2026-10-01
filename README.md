@@ -1,12 +1,12 @@
 # appupdate — paksa update aplikasi Android
 
-Modul Android yang memblokir aplikasi sampai user update, berdasarkan jawaban API [appupdate-backend](https://github.com/USERNAME/appupdate-backend) (default `https://dev.kerja.online`).
+Modul Android yang memblokir aplikasi sampai user update, berdasarkan jawaban API [appupdate-backend](https://github.com/ahmadfxz/appupdate-backend) (default `https://dev.kerja.online`).
 
 Mandiri: tanpa dependensi pihak ketiga, tanpa version catalog, tidak tahu apa-apa tentang aplikasi host. minSdk 21.
 
 ## Pasang di aplikasi
 
-Lewat [JitPack](https://jitpack.io) — ganti `USERNAME` dengan akun GitHub pemilik repo ini dan `1.0.0` dengan tag rilis.
+Lewat [JitPack](https://jitpack.io) — ganti `ahmadfxz` dengan akun GitHub pemilik repo ini dan `1.0.0` dengan tag rilis.
 
 1. `settings.gradle.kts`:
    ```kotlin
@@ -20,7 +20,7 @@ Lewat [JitPack](https://jitpack.io) — ganti `USERNAME` dengan akun GitHub pemi
    ```
 2. `app/build.gradle.kts`:
    ```kotlin
-   implementation("com.github.USERNAME:appupdate:1.0.0")
+   implementation("com.github.ahmadfxz:appupdate:1.0.0")
    ```
 3. `Application.onCreate()`:
    ```kotlin
@@ -37,7 +37,7 @@ Butuh Kotlin 2.0+ dan minSdk 21+. Tidak menarik dependensi selain kotlin-stdlib.
 git tag 1.0.1 && git push origin 1.0.1
 ```
 
-JitPack mem-build tag itu saat pertama kali diminta (status build: `https://jitpack.io/#USERNAME/appupdate`). Tes lokal: `./gradlew :appupdate:publishReleasePublicationToMavenLocal`.
+JitPack mem-build tag itu saat pertama kali diminta (status build: `https://jitpack.io/#ahmadfxz/appupdate`). Tes lokal: `./gradlew :appupdate:publishReleasePublicationToMavenLocal`.
 
 ## Perilaku
 
